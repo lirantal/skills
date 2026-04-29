@@ -45,9 +45,11 @@ Run your detection logic on the decoded content. Write three log files:
 - **failures** (TSV): repos where detection itself errored (network, 404, parse fail)
 
 When a single repo can have **multiple in-scope items** (e.g. several entries in a YAML array, several badge instances in a README, several workflow files), also write a fourth log:
-- **details** (TSV): one row per item with its classification (e.g. `already_ok`, `needs_replace`, `needs_insert`)
+- **details** (TSV): one row per item with its classification *and the raw current value* (e.g. `repo<TAB>path<TAB>line=33<TAB>MERGE_LABELS: "automerge,dependencies"`)
 
 The details file lets you see the **bucket distribution** before writing the transform — which is the cheapest way to keep the transform simple. If only one bucket is non-empty (e.g. every item to fix is the same kind), don't write a generalized transform that handles all theoretical cases. Pick the minimum transform that covers the populated buckets.
+
+**Log raw values, not just verdicts.** A details file that only says `ok` / `needs_change` is useless if the user reverses the target state mid-task ("actually, set it to X, not Y"). With the raw current value captured, you can re-bucket against the new target without re-fetching every file — which makes mid-task pivots cheap.
 
 Show the candidate count, the bucket distribution, and a sample of skip reasons to the user before proceeding. Suspiciously high skip counts often mean the detection regex is too narrow.
 
@@ -182,6 +184,13 @@ Two structural choices that matter:
 
 - **Trailing conditional → bogus exit code.** A script ending with `[[ -s "$FAIL" ]] && cat "$FAIL"` exits 1 when `$FAIL` is empty, because the conditional is the script's last command and evaluates false. Everything succeeded, but the wrapping shell sees failure. Either guard each conditional with `|| true`, follow the conditional with an unconditional command (an `echo`, a hint to view PRs), or end the script with an explicit `exit 0`.
 
+- **A crashing transform produces empty stdout, which is silently catastrophic.** If your transform script aborts mid-pipe (uncaught exception, missing `require`, parser failure), stdout is empty — and a naïve apply pipeline `transform | base64 | gh api PUT` will happily push an *empty file* to N repos before you notice. Two guards, both cheap:
+  ```bash
+  ruby transform.rb < before > after || { echo "transform_failed" >> "$FAIL"; return 1; }
+  [ -s "$after" ] || { echo "transform_empty" >> "$FAIL"; return 1; }
+  ```
+  Sample-verify catches this *if* you read the stderr line — but eyeballing only the diff (which shows "every line removed") can mislead you into thinking the transform was overzealous, not crashed. Build the apply path to fail closed on empty output.
+
 ## Detection: a worked example
 
 This is the pattern from a real run. The user wanted to remove the deprecated Snyk vulnerabilities badge from many READMEs.
@@ -234,6 +243,47 @@ A real example from a dependabot.yml run: parser-side, classify each `updates[*]
 A few file-format gotchas worth noting:
 - **Extension variants** — try `.yml` then `.yaml`; `.toml` vs `.cfg`; on 404 of one, fall through to the other before declaring "no match."
 - **Bucket distribution drives transform complexity** — if your scan shows every needs-change item is the same kind, don't write code for the other theoretical kinds. Less code, less bug surface, faster sample diff.
+
+## Multi-file PRs (one PR, several file changes)
+
+Plenty of bulk edits touch more than one file per repo — e.g. update an existing config *and* add a companion workflow alongside it. The skill's basic flow assumes one file per PR, but multi-file works the same way with a few extra rules.
+
+**One PR, several PUTs, several commits.** The Contents API only edits one file per call, so a multi-file PR ends up with one commit per file change on the same branch. That's normal and acceptable for review. If you need true atomicity (all-or-nothing applied as one commit), drop down to the Git Data API to build a tree + commit yourself — but only reach for that when the cost is justified.
+
+**Per-file decide independently** — don't conflate "this repo is in scope" with "every targeted file in this repo needs to change." For each file the PR is supposed to touch:
+
+- **Update existing**: refetch, run transform, `cmp -s before after`. If identical, this file is no-op for this repo — *don't* PUT it (the Contents API rejects identical-content PUTs anyway, but more importantly an empty diff in a multi-file PR is pure noise).
+- **Create new**: pre-check existence with `GET repos/$repo/contents/$path`. On 200, the file already exists — almost always you want to skip the *whole repo* with a clear reason like `<file>_already_exists` rather than overwrite a hand-rolled version. On 404, PUT *without* a `sha` field to create.
+- **Skip whole repo only when every file change is no-op or blocked.** A repo where one file is already correct but another is missing still needs a PR — for the missing one. Don't accidentally treat it as "already done."
+
+Concrete example (one update + one create):
+```bash
+# 1. existing file: refetch, transform, decide whether to commit
+update_needed=0
+gh api "repos/$repo/contents/$path_a" > "$tmpdir/resp_a"
+sha_a=$(jq -r .sha < "$tmpdir/resp_a")
+jq -r .content < "$tmpdir/resp_a" | base64 -d > "$tmpdir/before_a"
+ruby transform.rb < "$tmpdir/before_a" > "$tmpdir/after_a" || { echo fail; return 1; }
+[ -s "$tmpdir/after_a" ] || { echo empty; return 1; }
+cmp -s "$tmpdir/before_a" "$tmpdir/after_a" || update_needed=1
+
+# 2. new file: pre-check; skip whole repo if it already exists
+if gh api "repos/$repo/contents/$path_b" >/dev/null 2>&1; then
+  echo "$repo	${path_b}_already_exists" >> "$SKIP"; return 0
+fi
+
+# 3. branch + 1-or-2 PUTs + PR
+gh api -X POST "repos/$repo/git/refs" -f ref="refs/heads/$BRANCH" -f sha="$head_sha" >/dev/null
+[ "$update_needed" -eq 1 ] && gh api -X PUT "repos/$repo/contents/$path_a" \
+  -f message="$MSG_A" -f content="$(base64 < "$tmpdir/after_a" | tr -d '\n')" \
+  -f sha="$sha_a" -f branch="$BRANCH" >/dev/null
+gh api -X PUT "repos/$repo/contents/$path_b" \
+  -f message="$MSG_B" -f content="$(base64 < "$LOCAL_NEW_FILE" | tr -d '\n')" \
+  -f branch="$BRANCH" >/dev/null    # NB: no `sha` arg → create
+gh pr create -R "$repo" --base "$default_branch" --head "$BRANCH" --title "$PR_TITLE" --body "$PR_BODY"
+```
+
+**Log per-file outcomes alongside the PR URL.** When reviewing the run, you want to see which PRs touched which files (e.g. `repo<TAB>pr_url<TAB>updated=1<TAB>created=1`). Aggregate counts of "12 PRs added the new file only, 3 also fixed the existing one" are how you sanity-check that the apply matched the scan's bucket distribution — and how you spot drift between scan and apply (a refetched file may have shifted bucket; that's fine, but worth noticing).
 
 ## When to confirm with the user
 
