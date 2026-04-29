@@ -142,3 +142,8 @@ echo "FAIL: $(wc -l < "$FAIL" | tr -d ' ')"
 [ -s "$FAIL" ] && { echo; echo "--- failed ---";  cat "$FAIL"; }
 echo
 echo "View the resulting PRs: gh search prs --author=@me --state=open --head=$BRANCH"
+
+# Trailing conditionals like `[ -s X ] && ...` exit 1 when X is empty —
+# end with an explicit success so the script's exit code reflects per-repo
+# results (logged to $FAIL), not the empty-file branch of the last conditional.
+exit 0

@@ -44,7 +44,12 @@ Run your detection logic on the decoded content. Write three log files:
 - **skips** (TSV): repos you intentionally won't touch, with reasons (`no_match`, `already_done`, `unsupported_variant`, etc.)
 - **failures** (TSV): repos where detection itself errored (network, 404, parse fail)
 
-Show the candidate count and a sample of skip reasons to the user before proceeding. Suspiciously high skip counts often mean the detection regex is too narrow.
+When a single repo can have **multiple in-scope items** (e.g. several entries in a YAML array, several badge instances in a README, several workflow files), also write a fourth log:
+- **details** (TSV): one row per item with its classification (e.g. `already_ok`, `needs_replace`, `needs_insert`)
+
+The details file lets you see the **bucket distribution** before writing the transform — which is the cheapest way to keep the transform simple. If only one bucket is non-empty (e.g. every item to fix is the same kind), don't write a generalized transform that handles all theoretical cases. Pick the minimum transform that covers the populated buckets.
+
+Show the candidate count, the bucket distribution, and a sample of skip reasons to the user before proceeding. Suspiciously high skip counts often mean the detection regex is too narrow.
 
 ### Phase 2: Verify on a sample
 
@@ -141,6 +146,14 @@ Two structural choices that matter:
 
 ## Pitfalls (this stuff bit us — do not relearn)
 
+- **Probe for tools before reaching for an install.** Don't reflexively `pip install` / `npm install` / `brew install` a parser library mid-task — many users keep their environment lean and won't appreciate the install. Before you write the script, run a quick probe to see what's actually available, e.g.:
+  ```bash
+  which yq jq node python3 ruby perl
+  python3 -c 'import yaml' 2>&1 | head -1   # PyYAML
+  ruby -ryaml -e 'p YAML.load("a: 1")' 2>&1 # Ruby's YAML is stdlib — usually present
+  ```
+  Pick whichever installed tool can do the job (Ruby's `Psych` and Perl's `YAML` are stdlib on macOS; `jq` is universally available; `node` may have nothing extra without npm). If absolutely nothing on the system can parse the format you need, surface the constraint to the user and ask before installing.
+
 - **PATH in subshells.** When a script is invoked from a non-interactive context, the inherited `PATH` may not include `/opt/homebrew/bin` (Homebrew tools like `jq`, `gh`, `column`). Set `PATH` explicitly at the top of every script.
 
 - **`for x in $VAR` doesn't always split on newlines.** The IFS in some shells doesn't include `\n`, so a multi-line `$SAMPLE` becomes a single iteration with a string like `"repo1\nrepo2"` that gets sent to `gh api` and produces `invalid control character in URL`. Use `... | while read -r repo` instead.
@@ -166,6 +179,8 @@ Two structural choices that matter:
 - **Heredoc + bash variable substitution is fragile.** When passing complex strings (matched lines, multi-character substitutions) to a python heredoc, prefer `python3 - "$arg1" "$arg2" <<'PYEOF'` (note the quoted `'PYEOF'`) and read via `sys.argv`. Unquoted heredocs get bash-substituted and lose newlines/spaces unpredictably.
 
 - **Idempotency.** Always check whether the working branch already exists before creating it (a previous run may have left it). Treat 422 as "skip + log", not "fail".
+
+- **Trailing conditional → bogus exit code.** A script ending with `[[ -s "$FAIL" ]] && cat "$FAIL"` exits 1 when `$FAIL` is empty, because the conditional is the script's last command and evaluates false. Everything succeeded, but the wrapping shell sees failure. Either guard each conditional with `|| true`, follow the conditional with an unconditional command (an `echo`, a hint to view PRs), or end the script with an explicit `exit 0`.
 
 ## Detection: a worked example
 
@@ -196,6 +211,29 @@ new = old.replace(
 ```
 
 This generalizes: when transforming a URL that may appear in multiple wrapper formats, edit the URL substring and let the wrappers stay as they are.
+
+## Structured config edits (YAML / JSON / TOML): a second worked example
+
+The URL-substitution pattern above breaks down when the file is structured config (`.github/dependabot.yml`, `package.json`, `pyproject.toml`, etc.), because:
+- Indent and nesting *matter* — sed/grep can't reason about them.
+- Round-tripping through a parser typically **loses comments and ordering** (the user's original `# Why this thing exists` lines disappear).
+- The change isn't always at one literal location — e.g. "ensure each entry under `updates:` has a `labels:` key" requires walking N entries and inserting in the right place under each.
+
+The workable pattern is a **parse–edit–verify** split:
+
+1. **Parse to decide** — use a YAML/JSON parser (Ruby's `YAML` is stdlib, Perl's `YAML` is stdlib, `jq` for JSON) to classify each in-scope item: already correct, needs modification, missing entirely. This is purely diagnostic — no writes.
+
+2. **Surgical line edits to transform** — once you know which items need what, edit the source text line-by-line: locate the entry by its anchor line (e.g. `- package-ecosystem:`), determine sibling indent from that line's column, and insert / modify lines at the right indent. Don't round-trip through a YAML dumper unless you genuinely don't care about comments or key order.
+
+3. **Re-parse to verify the structural invariant** — after editing, parse the new content again and assert what you wanted is now true (e.g. `every entry now has labels containing both X and Y`). Failing this assertion should abort the per-repo run before any branch/commit/PR.
+
+4. **Plus a literal grep sanity check** — count occurrences in the new content (e.g. `# of "labels:" lines >= # of "- package-ecosystem:" lines`). The parser check confirms structure, the grep check confirms exact text presence — they catch different failure modes (a parser-valid file with the wrong indent, vs. a missing line).
+
+A real example from a dependabot.yml run: parser-side, classify each `updates[*]` entry as `ok` / `needs_block` / `needs_add`. Line-side, for each `- package-ecosystem:` line, find sibling indent (`dash_col + 2`), find the end of that entry's range (next `- package-ecosystem:` at the same column, or EOF, ignoring trailing blank lines), and insert the labels block just before any trailing blank-line separator. Re-parse the result and assert each entry's `labels` array now contains the targets; also grep that `labels:` count ≥ ecosystem count. **Iterate from the bottom up** when inserting into a line array, so earlier line indices remain valid.
+
+A few file-format gotchas worth noting:
+- **Extension variants** — try `.yml` then `.yaml`; `.toml` vs `.cfg`; on 404 of one, fall through to the other before declaring "no match."
+- **Bucket distribution drives transform complexity** — if your scan shows every needs-change item is the same kind, don't write code for the other theoretical kinds. Less code, less bug surface, faster sample diff.
 
 ## When to confirm with the user
 
