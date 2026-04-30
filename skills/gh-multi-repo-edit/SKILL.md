@@ -1,5 +1,5 @@
 ---
-name: gh-multi-repo-edits
+name: gh-bulk-repo-edit
 description: Perform identical, surgical edits across many GitHub repositories without cloning them locally — using the `gh` CLI's Contents API to read files, create branches, commit changes, and open PRs in bulk. Use this skill whenever the user wants to make the same small change (update a README, remove a deprecated badge, fix a link, bump a config) across more than a handful of repos they own or maintain. Trigger this skill on phrases like "across all my repos", "in each of these repos", "bulk update", "open PRs for all of them", "without cloning", "deprecated X in many repos", or any task where the work is mechanically identical and spans 5+ repositories. Even when the user describes the task in domain terms (e.g. "the Snyk badge is deprecated everywhere") rather than "multi-repo edit", trigger this skill — it's the right tool whenever cloning N repos to make a one-line change would be wasteful.
 ---
 

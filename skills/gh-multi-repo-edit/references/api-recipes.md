@@ -1,4 +1,4 @@
-# gh CLI / GitHub API recipes for multi-repo edits
+# gh CLI / GitHub API recipes for bulk repo edits
 
 All examples assume `gh` is authenticated. Substitute `<owner>`, `<repo>`, `<path>`, `<branch>` as appropriate.
 
