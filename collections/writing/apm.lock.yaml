@@ -1,0 +1,11 @@
+lockfile_version: '1'
+generated_at: '2026-05-01T11:05:22.534265+00:00'
+apm_version: 0.11.0
+dependencies:
+- repo_url: blader/humanizer
+  host: github.com
+  resolved_commit: 8b3a17889fbf12bedae20974a3c9f9de746ed754
+  package_type: claude_skill
+  deployed_files:
+  - .github/skills/humanizer
+  content_hash: sha256:b813857f183da05d08d5a80adac671df94c139f855809bd47ab8b7bb245546a2

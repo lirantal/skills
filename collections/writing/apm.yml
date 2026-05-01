@@ -1,0 +1,11 @@
+name: writing
+version: 1.0.0
+description: APM project for writing
+author: Liran Tal
+dependencies:
+  apm:
+  - lirantal/skills/skills/writing-style-explainer
+  - blader/humanizer
+  mcp: []
+includes: auto
+scripts: {}
