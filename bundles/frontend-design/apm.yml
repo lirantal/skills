@@ -1,0 +1,11 @@
+name: frontend-design
+version: 1.0.0
+description: APM project for frontend design
+author: Liran Tal
+dependencies:
+  apm:
+  - anthropics/skills/skills/frontend-design
+  - jakubkrehel/make-interfaces-feel-better/skills/make-interfaces-feel-better
+  mcp: []
+includes: auto
+scripts: {}
