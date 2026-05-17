@@ -64,6 +64,23 @@ Wait for explicit user approval. This is the cheapest gate that catches the most
 
 For samples on a list of repos: `awk -F'\t' '{print $1}' candidates.tsv | sort -R | head -2` (`shuf` may be unavailable on macOS).
 
+### Phase 2.5: Smoke-test the apply pipeline
+
+Phase 2 verifies the *transform* — does the new content look right? It does NOT verify the *apply pipeline* — do the PUT/DELETE calls work, does the PR-fallback fire correctly on protected branches, do error paths handle real API failures? These are independent failure surfaces.
+
+Before running the apply script on the full candidate set, run it on **1–3 representative repos** that span the distinct action paths in your bucket distribution. Pick deliberately:
+
+- One repo from the most common bucket (validates the happy path)
+- One repo from the most complex / multi-step bucket (validates the full sequence — multiple PUTs, a DELETE, a README rewrite, etc.)
+- **If any of your repos run CI lint on the file you're editing**, pick at least one of those as a smoke-test target and wait for its CI to complete after the smoke commit. Markdownlint, yamllint, actionlint, etc. surface lint failures here that *cannot* be caught by a local pre-flight: per-repo configs vary, and installing linters on the host running the skill is usually not viable. The repo's own CI is your lint pre-flight.
+
+  ```bash
+  gh run watch -R "$repo"      # waits for the latest CI run on the default branch
+  gh pr checks -R "$repo"      # or, for PR-fallback paths
+  ```
+
+Only proceed to the full bulk apply once smoke commits *and* their CI checks are green. If no candidate repo runs CI lint on the target file, acknowledge upfront that the bulk apply may surface lint failures post-hoc — and budget for a re-push pass rather than pretending the risk is zero. Re-pushing 200+ repos with a one-character fix is annoying but cheap; quietly breaking CI on 200+ repos is worse.
+
 ### Phase 3: Apply (bulk)
 
 Per repo, in this exact order:
@@ -145,6 +162,7 @@ echo "OK: $(wc -l < "$OK"), SKIP: $(wc -l < "$SKIP"), FAIL: $(wc -l < "$FAIL")"
 Two structural choices that matter:
 - **One function per repo** with `local` everything and a cleanup trap. Loops over hundreds of repos otherwise leak `$tmpdir`s.
 - **Continue on error**. The bulk run's value is fan-out; aborting on one failure defeats the point.
+- **Run-scoped or append-only logs.** Truncating logs at script start (`: > "$OK"`) silently wipes prior runs in the same session — risky when chaining smoke → production → retry passes through the same script (Phase 2.5 commits get nuked when Phase 3 starts; a fix-up re-push can't tell which repos were touched). Either name logs per run (`OK=/tmp/<scope>/ok_$(date +%s).log`) or append rather than truncate, and aggregate across runs with `cat`.
 
 ## Pitfalls (this stuff bit us — do not relearn)
 
@@ -170,7 +188,7 @@ Two structural choices that matter:
   gh api ... | jq -r --arg n "$wf_name" '.workflows[] | select(.name == $n) | .path'
   ```
 
-- **Beware regexes that match prose.** A pattern like `Known Vulnerabilities` matched section headings and TOC entries, not just the badge alt text. Prefer **structural signals** (URLs, tag attributes, file paths) over **labels**. When in doubt, require a URL substring.
+- **Beware regexes that match prose.** A pattern like `Known Vulnerabilities` matched section headings and TOC entries, not just the badge alt text. Prefer **structural signals** (URLs, tag attributes, file paths) over **labels**. When in doubt, require a URL substring. Also: Markdown headings frequently include emoji or other non-letter prefixes (`## 👤 Author`, `## 🤝 Contributing`) — a narrow regex like `^##+ +Author` will miss these. Prefer `^#+ +.*Word\b` (case-insensitive) when matching heading text.
 
 - **Workflow name ≠ workflow filename.** GitHub's old badge URL `/workflows/<name>/badge.svg` uses the workflow's `name:` field. The new URL needs the workflow's *file path* (`ci.yml`, `main.yml`, etc.). Resolve via `GET /repos/{owner}/{repo}/actions/workflows`, which returns `[{name, path}, …]`. Map by `name`, then `basename` the `path`.
 
@@ -190,6 +208,12 @@ Two structural choices that matter:
   [ -s "$after" ] || { echo "transform_empty" >> "$FAIL"; return 1; }
   ```
   Sample-verify catches this *if* you read the stderr line — but eyeballing only the diff (which shows "every line removed") can mislead you into thinking the transform was overzealous, not crashed. Build the apply path to fail closed on empty output.
+
+- **`gh api` writes 404 response bodies to stdout, not stderr.** A naïve check like `resp=$(gh api ... 2>/dev/null); [ -n "$resp" ]` is true for every 404 — the error JSON went to stdout. Always use the exit code: `if gh api ... >file 2>/dev/null; then ...`. This bites detection logic ("does this file exist?") in the most damaging way: every repo looks like a match.
+
+- **Bash `read -r` with `IFS=$'\t'` collapses adjacent empty fields.** Tab is in IFS-whitespace, so per bash semantics consecutive tabs act as a single delimiter, dropping empty middle columns. A round-trip through `while IFS=$'\t' read -r a b c d ...; do printf '%s\t...' ...; done` silently shifts your TSV's column layout whenever a middle field (a SHA, a status) is empty. Fixes: write empties as a non-empty sentinel like `-` in your TSV, OR process with `awk -F'\t'` / Python which honor empty fields. Verify with `awk -F'\t' '{print NF}' file | sort -u` — every row should have the same field count.
+
+- **Branch-protection rejection on direct commit ≠ "branch already exists."** When you `PUT` to the Contents API on a protected default branch, `gh` returns nonzero with stderr like `Could not create file: Changes must be made through a pull request. ... (HTTP 409)`. If your PR-fallback trigger matches on phrasing like "status code 4xx", it won't fire — gh actually emits `HTTP 4xx`. Match on substrings the API really prints: `'must be made through a pull request|HTTP 4(0[39]|22)'`. Verify your error-detection against a known-protected repo before scale-out — a fallback path that never fires looks the same as a hard failure. Note this is separate from the 422 "branch already exists" case on `git/refs` POST.
 
 ## Detection: a worked example
 
