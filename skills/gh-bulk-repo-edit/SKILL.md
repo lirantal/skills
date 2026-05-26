@@ -81,6 +81,17 @@ Before running the apply script on the full candidate set, run it on **1–3 rep
 
 Only proceed to the full bulk apply once smoke commits *and* their CI checks are green. If no candidate repo runs CI lint on the target file, acknowledge upfront that the bulk apply may surface lint failures post-hoc — and budget for a re-push pass rather than pretending the risk is zero. Re-pushing 200+ repos with a one-character fix is annoying but cheap; quietly breaking CI on 200+ repos is worse.
 
+**Triaging the smoke commit's CI runs.** "Wait for all green" is the safe default, but in practice the smoke commit kicks off every workflow on `push` to the default branch — many of which can't possibly read the file you changed. Blocking on all of them wastes time. Two refinements make the gate principled rather than binary:
+
+1. **Split affected vs. unaffected checks.** Identify which workflows could plausibly be influenced by *this specific edit*: typically the workflow file itself (if you edited a workflow), plus any check whose inputs include the path or extension you touched (e.g., `yamllint` on `.yml`, `markdownlint` on `.md`, `actionlint` on `.github/workflows/**`). Block on those (`gh run watch -R "$repo" <run-id>`). For workflows that can't read the changed path (a links-checker scanning `.md`, a release workflow on tag-push, a scheduled job), it's fine to note their status and move on without waiting.
+2. **Diff red checks against history before declaring regression.** A check that's red on the smoke commit might already have been red on the prior commits — pre-existing breakage, not caused by you. Confirm with:
+   ```bash
+   gh run list -R "$repo" -w '<workflow name>' -L 5 --json conclusion,headSha,createdAt
+   ```
+   If the last few runs were already failing on unrelated SHAs, log it as pre-existing and proceed. If the smoke commit is the *first* red after a streak of greens, treat it as a regression and stop.
+
+When you can't confidently split affected from unaffected (mixed-content edits, unfamiliar repo layouts, workflows you didn't look at), fall back to the default: `gh run watch` everything and wait for green. The shortcut only earns its keep when you've actually reasoned about which checks consume the bytes you changed.
+
 ### Phase 3: Apply (bulk)
 
 Per repo, in this exact order:
