@@ -194,7 +194,9 @@ Two structural choices that matter:
 
 - **Default branch is not always `main`.** Don't hardcode. `gh api repos/$repo -q .default_branch` per repo — `master`, `develop`, etc. all show up in the wild.
 
-- **README casing varies.** Use the `/readme` endpoint, not `/contents/README.md`, when fetching READMEs.
+- **README casing varies.** Use the `/readme` endpoint, not `/contents/README.md`, when fetching READMEs. But know its limit: `/readme` returns *only the root README* — nested READMEs (`packages/*/README.md`, `docs/README.md`) are invisible to it. If your task touches anything that nested READMEs might reference, walk the tree explicitly via `GET /repos/{owner}/{repo}/git/trees/{branch}?recursive=1` and filter for `.md`/`.markdown`/`.mdx` blobs.
+
+- **When you delete or move a file, all references to the old path become stale — not just in the README.** Other docs commonly link to `CONTRIBUTING.md` / `CODE_OF_CONDUCT.md` / `LICENSE` etc.: `AGENTS.md`, `DEVELOPMENT.md`, `CHANGELOG.md`, nested READMEs in monorepos, even contributing-related sections of `SECURITY.md`. If you only rewrote the root README, link checkers (lychee, etc.) will flag the rest in CI after the merge. After the apply phase, run a follow-up scan across the affected repos' full markdown tree (via the recursive tree API) for references to the old path. Either fold this into Phase 1 detection upfront, or run it as a Phase 4 "stale-reference sweep" after Phase 3.
 
 - **Heredoc + bash variable substitution is fragile.** When passing complex strings (matched lines, multi-character substitutions) to a python heredoc, prefer `python3 - "$arg1" "$arg2" <<'PYEOF'` (note the quoted `'PYEOF'`) and read via `sys.argv`. Unquoted heredocs get bash-substituted and lose newlines/spaces unpredictably.
 
