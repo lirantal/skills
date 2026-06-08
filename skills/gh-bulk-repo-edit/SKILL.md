@@ -337,6 +337,21 @@ This skill drives **side-effecting, externally-visible** changes (PRs that notif
 
 The user has *tools* but they don't have *time*. Confirm with a one-line summary plus a 2-option pick (proceed all / chunk into N) — not with paragraphs.
 
+## Non-file bulk ops: webhook health-checks & cleanup (a worked example)
+
+Not every bulk op edits a file. Auditing and pruning repo **webhooks** across many repos is the same scan → verify → apply shape, driven entirely by `gh api` (no clone, no Contents API). See `references/api-recipes.md` → "Webhooks" for the exact calls. The pattern:
+
+- **Scan** — list `repos/<repo>/hooks` for every repo and bucket each hook by `last_response.code`: `healthy` (2xx) / `unhealthy` (3xx–5xx) / `undelivered` (code `0`, GitHub status `unused`). Capture `id`, `config.url`, code, and status per hook — you need the id to delete and the url to classify by identity.
+- **Verify** — this is the step that earns its keep. `last_response` only reflects the *most recent* delivery, and **`unused` ≠ dead** — it means GitHub has never had an event to deliver, not that the endpoint is broken. To get the truth, **ping** the hook (`POST .../hooks/<id>/pings`) and re-read the delivery's `status_code`. A ping is the right probe here precisely because it's non-destructive and isolates the endpoint: an empty commit would "work" but fires `push` + CI + coverage uploads + notifications, testing far more than the hook.
+- **Apply** — delete (`DELETE .../hooks/<id>`) only hooks whose ping (or genuine last delivery) is non-2xx. Healthy-but-idle hooks ping 2xx and are kept.
+
+Two judgment rules that came out of a real 522-repo run:
+
+1. **Disambiguate `unused` by pinging — never bulk-delete the bucket on the status field alone.** In that run the `unused` bucket was 91 hooks; pinging split it into 18 genuinely-rejected codecov hooks (403) and 38 healthy-but-idle Snyk/Codefresh hooks (200). Deleting the bucket wholesale would have destroyed 38 working integrations.
+2. **Some endpoints are dead by *identity*, independent of any delivery code.** `notify.travis-ci.org` was decommissioned by Travis, so every hook pointing at it is dead whatever its recorded state — delete those by URL match, no ping needed. (Likewise, legacy `codecov.io/webhooks/github` hooks are vestigial: modern Codecov coverage flows through the `codecov/codecov-action` upload + GitHub App, not the webhook.)
+
+Because deletion is destructive and irreversible, confirm the *scope* with the user before applying (offer strict "only failing-delivery hooks" vs. broader "failing + dead-by-identity" vs. "everything non-healthy"), and present the ping results before deleting the ambiguous bucket. As always, exempt `*goof*` repos from the bulk run and report them separately. Needs token scope `admin:repo_hook` (or `admin:org_hook` for org-level hooks at `orgs/<org>/hooks`).
+
 ## What this skill does NOT do
 
 - It does **not** merge PRs. Opening PRs is reversible (close them); merging changes mainline.

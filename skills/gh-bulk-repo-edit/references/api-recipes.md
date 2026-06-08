@@ -106,6 +106,44 @@ gh search prs --author=@me --state=open --head=<branch> --json url -q '.[].url' 
     done
 ```
 
+## Webhooks (list / health-check / delete)
+
+Webhooks aren't a first-class `gh` command, but the full REST API is reachable via `gh api`. Needs `admin:repo_hook` scope (repo) or `admin:org_hook` (org). The `config.secret` is write-only — it never comes back in GETs.
+
+```bash
+# List a repo's webhooks with the status of their most recent delivery
+gh api "repos/<owner>/<repo>/hooks" \
+  -q '.[] | "\(.id)\t\(.config.url)\t\(.last_response.code)\t\(.last_response.status)"'
+
+# Fields that matter per hook: .id, .active, .events, .config.url, .last_response{code,status,message}
+```
+
+**`last_response` is a snapshot of the single most-recent delivery, and its `status` lies by omission.** A hook that has never fired shows `code:0, status:"unused"` — that is NOT the same as dead. `unused` ≠ broken; it just means GitHub has had no event to deliver. To learn the endpoint's *actual* health, manufacture a delivery with a **ping** (cheap, non-destructive, no commit/CI/notification noise — unlike an empty commit, which fires a `push` plus everything else):
+
+```bash
+# 1. Ping the hook — GitHub sends a `ping` event to the endpoint on demand
+gh api -X POST "repos/<owner>/<repo>/hooks/<hook_id>/pings"
+
+# 2. Read the result (deliveries register within a few seconds)
+gh api "repos/<owner>/<repo>/hooks/<hook_id>/deliveries" \
+  -q 'map(select(.event=="ping")) | .[0] | "\(.status_code)\t\(.status)"'
+# 2xx = endpoint alive & accepting; 403/410/502/etc = dead or rejected.
+
+# Full delivery history (req/resp bodies for one delivery)
+gh api "repos/<owner>/<repo>/hooks/<hook_id>/deliveries"
+gh api "repos/<owner>/<repo>/hooks/<hook_id>/deliveries/<delivery_id>"
+
+# Re-send a past delivery
+gh api -X POST "repos/<owner>/<repo>/hooks/<hook_id>/deliveries/<delivery_id>/attempts"
+
+# Delete a hook (destructive — confirm scope with the user first)
+gh api -X DELETE "repos/<owner>/<repo>/hooks/<hook_id>"
+```
+
+**Bulk webhook cleanup maps onto the three-phase workflow:** scan = list hooks across all repos and bucket by `last_response.code` (`healthy` 2xx / `unhealthy` 3xx-5xx / `undelivered` 0 i.e. `unused`); verify = **ping the `undelivered` bucket** and re-read `status_code` to split genuinely-dead from healthy-but-idle; apply = delete only the hooks whose ping (or last delivery) is non-2xx. Keep the `gh api -X DELETE` exit code as your success signal. Note `last_response` only covers repo hooks reached via `repos/.../hooks`; org-level hooks live at `orgs/<org>/hooks`.
+
+> A real run: 104 hooks across 522 repos bucketed to 3 healthy / 10 unhealthy / 91 `unused`. Pinging the `unused` bucket proved 18 codecov hooks were genuinely rejected (403) while 38 Snyk/Codefresh hooks were healthy-but-idle (200). Deleting the whole `unused` bucket blindly would have destroyed 38 working integrations — the ping is what made the distinction. `notify.travis-ci.org` hooks were dead regardless of recorded state (service decommissioned), so they were deleted by URL match, not by ping.
+
 ## Cleanup if a bulk run goes wrong
 
 ```bash
