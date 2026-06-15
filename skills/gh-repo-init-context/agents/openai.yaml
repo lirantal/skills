@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Repo Context"
+  short_description: "Scaffold repo context docs for agents"
+  default_prompt: "Use $gh-repo-init-context to standardize this repository with AGENTS.md routing and docs/ project context files."
