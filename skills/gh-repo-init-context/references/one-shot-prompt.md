@@ -23,6 +23,14 @@ Use these documentation conventions:
 
 First inspect the repo's existing markdown files, manifests, scripts, source layout, and tests. Preserve existing documentation content. If docs/ already exists, either add existing docs to docs/README.md and AGENTS.md routing, or normalize names only when the mapping is obvious and links can be safely updated.
 
+If an existing AGENTS.md has repo-specific purpose, architecture maps, source-path ownership, local commands, testing constraints, generated-file warnings, style rules, docs links, or domain boundaries, treat it as source material before replacing or shrinking it. Move that context into the canonical docs where future agents will naturally look:
+
+- Purpose, product boundaries, module maps, data/control flow, public API surfaces, and invariants go in docs/architecture.md.
+- Setup details, source invocation examples, package-manager quirks, generated output locations, build artifacts, and useful source paths go in docs/development.md.
+- Test commands, fixture behavior, temp directories, manual checks, coverage expectations, and integration-test guidance go in docs/testing.md.
+- Runtime requirements, import style, lint/format expectations, generated-file warnings, naming conventions, documentation rules, and maintenance rules go in docs/conventions.md.
+- Existing long-form methodology, feature, research, operations, troubleshooting, or legacy development docs remain in place and are linked from docs/README.md.
+
 Create or update AGENTS.md from this template. Use it verbatim for a fresh repo unless a linked file will not exist after setup, or unless the repo has existing AGENTS.md content that must be preserved.
 
 ```md
@@ -66,6 +74,8 @@ Treat those files as the source of truth. Do not duplicate or reinterpret their 
 Do not add a Baseline Commands section to AGENTS.md. Do not duplicate contribution, release, build, test, or style details that belong in the linked docs.
 
 Update docs/README.md as the docs index with one-line descriptions for each linked document. Update root README.md only if needed to add a concise link to docs/README.md.
+
+Before finalizing, compare the old AGENTS.md against the new docs/ files and confirm that no repo-specific instruction or context was silently dropped.
 
 After editing, run the repo's markdown lint command if obvious and cheap; otherwise perform a lightweight path/link sanity check and report what was validated.
 ```
