@@ -24,8 +24,26 @@ tessl skill lint "<skill-name>"
 tessl skill publish "<skill-name>"
 ```
 
+If publishing fails because the same version already exists in the registry, the helper retries that publish with a patch bump:
+
+```bash
+tessl skill publish "<skill-name>" --bump patch
+```
+
 For example, this publishes `skills/codex-session-blogger`:
 
 ```bash
 scripts/tessl-publish-skill.sh codex-session-blogger
+```
+
+To publish every skill under `skills/`, pass `*`:
+
+```bash
+scripts/tessl-publish-skill.sh *
+```
+
+The helper also accepts a quoted wildcard:
+
+```bash
+scripts/tessl-publish-skill.sh '*'
 ```
