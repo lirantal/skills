@@ -1,0 +1,30 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Codex Workflows",
+      "description": "Skills for organizing Codex work and turning sessions into publishable artifacts.",
+      "skills": [
+        "codex-chat-organizer",
+        "codex-session-blogger"
+      ]
+    },
+    {
+      "title": "GitHub Automation",
+      "description": "Skills for repository maintenance, bulk edits, and pull request triage.",
+      "skills": [
+        "gh-repo-init-context",
+        "gh-bulk-repo-edit",
+        "gh-bulk-pr-triage"
+      ]
+    },
+    {
+      "title": "Writing",
+      "description": "Skills for reusable editorial style and explainer article structure.",
+      "skills": [
+        "writing-style-explainer"
+      ]
+    }
+  ]
+}
