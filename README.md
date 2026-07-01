@@ -24,11 +24,7 @@ tessl skill lint "<skill-name>"
 tessl skill publish "<skill-name>"
 ```
 
-If publishing fails because the same version already exists in the registry, the helper retries that publish with a patch bump:
-
-```bash
-tessl skill publish "<skill-name>" --bump patch
-```
+If publishing fails because the same version already exists in the registry, the helper patch-bumps the version in `.tessl-plugin/plugin.json` and retries. It keeps trying patch versions until publish succeeds or reaches the retry limit. Set `TESSL_PUBLISH_MAX_BUMPS` to change the default limit of 20 attempts.
 
 For example, this publishes `skills/codex-session-blogger`:
 
