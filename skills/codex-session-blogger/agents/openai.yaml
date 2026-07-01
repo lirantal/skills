@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Session Blogger"
+  short_description: "Turn Codex sessions into technical blog drafts"
+  default_prompt: "Use $codex-session-blogger to turn this Codex work session into a technical blog draft."

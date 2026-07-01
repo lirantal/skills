@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Chat Organizer"
+  short_description: "Move Codex chats into saved Projects"
+  default_prompt: "Use $codex-chat-organizer to move selected Codex chats into saved Projects."
