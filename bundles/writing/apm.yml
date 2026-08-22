@@ -6,6 +6,7 @@ dependencies:
   apm:
   - lirantal/skills/skills/writing-style-explainer
   - blader/humanizer
+  - jxnl/dots/agents/skills/audit-ai-writing
   mcp: []
 includes: auto
 scripts: {}
