@@ -8,7 +8,7 @@ To inspect a skill, open its `SKILL.md`:
 sed -n '1,240p' skills/gh-repo-init-context/SKILL.md
 ```
 
-Open the relevant `SKILL.md` to understand when the skill applies and how to use it.
+Open the relevant `SKILL.md` to understand when the skill applies and how to use it, and follow any workflow, safety, or validation guidance it provides.
 
 ## Skill catalog
 
@@ -29,8 +29,6 @@ bundles/  Grouped skill bundles and their APM manifests.
 scripts/  Local maintenance helpers, including Tessl publishing.
 ```
 
-For contribution guidance, see [`CONTRIBUTING.md`](CONTRIBUTING.md). Skill-specific instructions and validation guidance belong next to the skill in its `SKILL.md`.
-
 ## Publish a skill to Tessl
 
 Use the Tessl publishing helper from the repository root to publish one skill:
@@ -45,12 +43,17 @@ To publish every skill under `skills/`, use the quoted wildcard:
 scripts/tessl-publish-skill.sh '*'
 ```
 
-The helper imports the selected skill into the `lirantal` Tessl workspace as public, lints it, and publishes it. If the registry reports that the version already exists, it patch-bumps the Tessl manifest version and retries until publishing succeeds or the retry limit is reached. The default limit is 20 attempts; set `TESSL_PUBLISH_MAX_BUMPS` to change it.
+The helper imports the selected skill into the `lirantal` Tessl workspace as public, lints it, and publishes it. If the registry reports that the version already exists, it patch-bumps the Tessl manifest version and retries until publishing succeeds or the retry limit is reached. The default is 20 patch-bump retries after the initial publish attempt; set `TESSL_PUBLISH_MAX_BUMPS` to change it.
 
-The lower-level Tessl commands remain available for maintainers who need them:
+The lower-level Tessl commands remain available for maintainers who need them. Run them from the `skills/` directory:
 
 ```bash
+cd skills
 tessl skill import "<skill-name>/" --workspace lirantal --public
 tessl skill lint "<skill-name>"
 tessl skill publish "<skill-name>"
 ```
+
+## Contributing
+
+For contribution guidance, see [`CONTRIBUTING.md`](CONTRIBUTING.md). Skill-specific instructions and validation guidance belong next to the skill in its `SKILL.md`.
