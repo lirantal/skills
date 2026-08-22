@@ -1,6 +1,6 @@
 # Codex skills
 
-This repository contains reusable personal Codex skills, grouped bundles, and local maintenance helpers. Each skill is self-contained under `skills/`; its `SKILL.md` describes when it applies, its workflow, safety notes, and validation guidance.
+This repository contains reusable personal Codex skills, grouped bundles, and local maintenance helpers. Each skill is self-contained under `skills/`, with a `SKILL.md` describing the skill and its usage guidance.
 
 To inspect a skill, open its `SKILL.md`:
 
