@@ -1,25 +1,71 @@
-# Codex skills
+# Agents Skills
 
-This repository contains reusable personal Codex skills, grouped bundles, and local maintenance helpers. Each skill is self-contained under `skills/`, with a `SKILL.md` describing the skill and its usage guidance.
+This repository is a personal collection of reusable agent skills, curated bundles, and maintenance helpers. Skills can be installed into your user environment or a project through Microsoft's [Agent Package Manager (APM) quickstart](https://microsoft.github.io/apm/quickstart/).
 
-To inspect a skill, open its `SKILL.md`:
+## Install APM
+
+On macOS or Linux, install APM and verify it is available:
 
 ```bash
-sed -n '1,240p' skills/gh-repo-init-context/SKILL.md
+curl -sSL https://aka.ms/apm-unix | sh
+apm --version
 ```
 
-Open the relevant `SKILL.md` to understand when the skill applies and how to use it, and follow any workflow, safety, or validation guidance it provides.
+The official [APM quickstart](https://microsoft.github.io/apm/quickstart/) contains the Windows installation alternative. See the [package installation guide](https://microsoft.github.io/apm/consumer/install-packages/) and [`apm install` reference](https://microsoft.github.io/apm/reference/cli/install/) for more detail.
 
-## Skill catalog
+## Install skills globally
 
-| Skill | Use it when |
+Install one skill for Codex at user scope:
+
+```bash
+# Install one skill for Codex at user scope
+apm install -g --target codex lirantal/skills --skill gh-repo-init-context
+```
+
+Install the full skill collection for Codex at user scope:
+
+```bash
+# Install the full skill collection for Codex at user scope
+apm install -g --target codex lirantal/skills --skill '*'
+```
+
+Here, `-g` means user scope, `--target codex` selects the deployment target, and `--skill` selects a named skill from this multi-skill repository. The wildcard is quoted so the shell passes `*` to APM instead of expanding it against local filenames. `claude` and `agent-skills` are also available as APM targets; individual skills have not necessarily been tested on every runtime.
+
+## Install curated bundles in a project
+
+From a fresh project directory, install the curated bundles you need:
+
+```bash
+mkdir my-agent-project
+cd my-agent-project
+
+apm install lirantal/skills/bundles/writing --target codex
+apm install lirantal/skills/bundles/frontend-design --target codex
+```
+
+Project-scope installs update the current project, not your global APM state. Both commands add dependencies to the same `apm.yml`. APM writes `apm.lock.yaml` for reproducibility, so teams should commit both `apm.yml` and `apm.lock.yaml`. The generated `apm_modules/` directory is cache/output and should not be committed.
+
+| Need | Command shape | Result |
+| --- | --- | --- |
+| One skill for one user | `apm install -g --target codex lirantal/skills --skill gh-repo-init-context` | Installs a selected skill into user scope. |
+| All skills for one user | `apm install -g --target codex lirantal/skills --skill '*'` | Installs the full collection into user scope. |
+| Curated project setup | `apm install lirantal/skills/bundles/writing --target codex` | Adds a curated bundle to the current project's APM manifest and deploys it. |
+
+## Bundle catalog
+
+| Bundle | Contents |
 | --- | --- |
-| [`codex-chat-organizer`](skills/codex-chat-organizer/SKILL.md) | You need to move Codex chats or threads into saved Codex Projects. |
-| [`codex-session-blogger`](skills/codex-session-blogger/SKILL.md) | You want to turn a Codex session, implementation, investigation, or review into a publishable technical article. |
-| [`gh-bulk-pr-triage`](skills/gh-bulk-pr-triage/SKILL.md) | You need to triage many open GitHub pull requests using CI and mergeability rules. |
-| [`gh-bulk-repo-edit`](skills/gh-bulk-repo-edit/SKILL.md) | You need to apply the same surgical edit across many GitHub repositories. |
-| [`gh-repo-init-context`](skills/gh-repo-init-context/SKILL.md) | You need to establish or normalize durable project context and documentation in a GitHub repository. |
-| [`writing-style-explainer`](skills/writing-style-explainer/SKILL.md) | You need guidance for writing clear, structured explainer articles. |
+| [`writing`](bundles/writing/apm.yml) | `writing-style-explainer`, `blader/humanizer`, and `jxnl/dots/agents/skills/audit-ai-writing`. |
+| [`frontend-design`](bundles/frontend-design/apm.yml) | `anthropics/skills/skills/frontend-design` and `jakubkrehel/make-interfaces-feel-better/skills/make-interfaces-feel-better`. |
+
+Individual skills remain discoverable in their [`SKILL.md`](skills/) files:
+
+- [`codex-chat-organizer`](skills/codex-chat-organizer/SKILL.md)
+- [`codex-session-blogger`](skills/codex-session-blogger/SKILL.md)
+- [`gh-bulk-pr-triage`](skills/gh-bulk-pr-triage/SKILL.md)
+- [`gh-bulk-repo-edit`](skills/gh-bulk-repo-edit/SKILL.md)
+- [`gh-repo-init-context`](skills/gh-repo-init-context/SKILL.md)
+- [`writing-style-explainer`](skills/writing-style-explainer/SKILL.md)
 
 ## Repository layout
 
