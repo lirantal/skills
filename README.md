@@ -29,7 +29,7 @@ Install the full skill collection for Codex at user scope:
 apm install -g --target codex lirantal/skills --skill '*'
 ```
 
-Here, `-g` means user scope, `--target codex` selects the deployment target, and `--skill` selects a named skill from this multi-skill repository. The wildcard is quoted so the shell passes `*` to APM instead of expanding it against local filenames. `claude` and `agent-skills` are also available as APM targets; individual skills have not necessarily been tested on every runtime.
+Here, `-g` is the short form of `--global` and means user scope, `--target codex` selects the deployment target, and `--skill` selects a named skill from this multi-skill repository. You can replace `codex` with `claude` or `agent-skills` while keeping the same `lirantal/skills...` package reference. The wildcard is quoted so the shell passes `*` to APM instead of expanding it against local filenames; individual skills have not necessarily been tested on every runtime.
 
 ## Install curated bundles in a project
 
@@ -43,7 +43,7 @@ apm install lirantal/skills/bundles/writing --target codex
 apm install lirantal/skills/bundles/frontend-design --target codex
 ```
 
-Project-scope installs update the current project, not your global APM state. Both commands add dependencies to the same `apm.yml`. APM writes `apm.lock.yaml` for reproducibility, so teams should commit both `apm.yml` and `apm.lock.yaml`. The generated `apm_modules/` directory is cache/output and should not be committed.
+Project-scope installs update the current project, not your global APM state. Both commands add dependencies to the same `apm.yml`. APM writes `apm.lock.yaml` for reproducibility, so teams should commit both `apm.yml` and `apm.lock.yaml`; collaborators and CI should run `apm install` from the project root to restore dependencies from the committed manifest and lockfile. The generated `apm_modules/` directory is cache/output and should not be committed.
 
 | Need | Command shape | Result |
 | --- | --- | --- |
