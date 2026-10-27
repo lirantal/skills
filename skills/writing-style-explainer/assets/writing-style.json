@@ -1,372 +1,101 @@
 {
-    "summary": "Evidence-driven, deep technical explainer that synthesizes context, mechanisms, trade-offs, and practical guidance for experienced JS/Node engineers.",
-    "lirantal_com_blog": {
-      "no_terminal_references_section": true,
-      "canonical_links": "Place at least three descriptive inline links to authoritative sources in the body where each topic warrants it. Do not add a terminal ## References, bibliography, or link-dump section.",
-      "introduction": {
-        "forbidden": [
-          "Mentioning the cover, hero, OG, Open Graph imagery, or how the image was produced",
-          "Opening paragraphs framed as 'intended audience', reader personas, or 'who should read this' lists"
-        ],
-        "preferred": [
-          "Thesis and the problem addressed in the first sentences",
-          "Why the topic matters now (stakes, change, or failure mode)"
-        ]
-      }
-    },
-    "audience": {
-      "persona": "Senior JavaScript/Node.js engineers, OSS maintainers, security-minded developers, and tech leads evaluating approaches.",
-      "assumed_knowledge": "Modern JS/TS, Node.js LTS, package managers (npm/pnpm), Git/GitHub, CI basics, reading RFCs/docs.",
-      "pain_points": "Superficial walkthroughs without rationale, missing trade-offs, unclear verification/measurement, outdated stack examples."
-    },
-    "goals": [
-      "educate",
-      "influence architecture",
-      "establish best practices",
-      "inform decision-making"
+  "profile_version": "2.0.0",
+  "summary": "Readable, evidence-driven technical articles that explain mechanisms and help readers make informed decisions.",
+  "provenance": "Editorial defaults, not a statistical profile of the author's published work. No corpus-derived scores or confidence claims.",
+  "audience": {
+    "default": "Experienced JavaScript and Node.js engineers, OSS maintainers, and security-minded developers.",
+    "adaptation": "Use the brief to adjust assumed knowledge. Define unfamiliar concepts when needed; skip primers the reader does not need."
+  },
+  "voice": {
+    "tone": [
+      "curious",
+      "precise",
+      "pragmatic",
+      "candid"
     ],
-    "tone_of_voice": {
-      "labels": [
-        "professional",
-        "analytical",
-        "curious",
-        "pragmatic",
-        "trustworthy"
-      ],
-      "intensity": {
-        "formality": 0.55,
-        "playfulness": 0.15,
-        "assertiveness": 0.7
-      }
-    },
-    "narrative_voice": {
-      "person": "2nd/3rd",
-      "tense": "present"
-    },
-    "reading_level": {
-      "flesch_kincaid": 11.2,
-      "avg_sentence_words": 20,
-      "passive_voice_pct": 6,
-      "paragraph_median_words": 60
-    },
-    "pacing": "Moderate-to-deliberate: concept first, then mechanism, then applied guidance with verification.",
-    "structure_pattern": "Thesis → Background & prior art → How it works (mechanism) → Trade-offs & alternatives → Applications & examples → Validation & measurement → Limitations & future work → FAQ → Next steps & CTA. (On lirantal.com: no terminal References section—inline links only; see lirantal_com_blog.)",
-    "section_templates": [
-      {
-        "name": "Deep Technical Explainer",
-        "outline": [
-          "Title (outcome or claim)",
-          "Abstract (2-3 sentences: what/why/outcome)",
-          "Background & Prior Art",
-          "How It Works (Mechanism)",
-          "Trade-offs & Alternatives",
-          "Applications & Examples",
-          "Validation & Measurement",
-          "Security & Performance Considerations",
-          "Limitations & Future Work",
-          "Troubleshooting (if actionable)",
-          "FAQ",
-          "Next Steps & CTA"
-        ],
-        "heading_style": {
-          "case": "Title Case",
-          "pattern": "descriptive statements; avoid clickbait"
-        }
-      }
-    ],
-    "formatting_conventions": {
-      "lists": "Bullets for concept enumeration; numbered lists for procedures or sequences.",
-      "callouts": [
-        "Note",
-        "Tip",
-        "Warning"
-      ],
-      "tables": "Use for comparison matrices and result summaries.",
-      "emoji_usage": "never"
-    },
-    "code_conventions": {
-      "languages_top": [
-        { "lang": "js", "pct": 45 },
-        { "lang": "bash", "pct": 30 },
-        { "lang": "yaml", "pct": 15 },
-        { "lang": "json", "pct": 10 }
-      ],
-      "snippet_length_lines_avg": 12,
-      "inline_code_rules": "Use inline backticks for identifiers, CLI flags, environment variables, filenames.",
-      "comments_style": "Explain intent and constraints above the snippet; inline comments only for non-obvious lines.",
-      "error_handling_demo": "When behavior differs across options, show a failing case and recovery; include expected output or exit code."
-    },
-    "linking_style": {
-      "when_to_link": "On first mention of external tools/specs; prefer deep links to canonical docs or relevant sections.",
-      "preferred_domains": [
-        "lirantal.com",
-        "nodejs-security.com",
-        "github.com"
-      ],
-      "anchor_text": "Descriptive and specific; avoid 'click here'."
-    },
-    "visuals_usage": {
-      "frequency": "sometimes",
-      "types": [
-        "architecture/sequence diagrams",
-        "comparison tables",
-        "flowcharts"
-      ],
-      "alt_text_style": "Explain what the reader learns or the flow depicted."
-    },
-    "lexicon": {
-      "preferred_terms": [
-        "CI/CD",
-        "supply chain security",
-        "lockfile",
-        "semver",
-        "trade-off",
-        "baseline",
-        "observability",
-        "verification"
-      ],
-      "avoid_terms": [
-        "simply",
-        "just",
-        "obviously",
-        "magic"
-      ],
-      "stock_phrases": [
-        "At a high level,",
-        "In practice,",
-        "The key trade-off is",
-        "To validate this,"
-      ]
-    },
-    "cta_patterns": [
-      {
-        "stage": "end",
-        "pattern": "Actionable next steps aligned to the example stack",
-        "placement": "final section",
-        "example": "Try the reference implementation, benchmark with your workload, and report findings."
-      }
-    ],
-    "seo_patterns": {
-      "title_length_chars": "55-65",
-      "keywords_in_h2": true,
-      "slug_style": "kebab-case"
-    },
-    "style_fingerprints": [
-      "Opens with a clear thesis and problem framing (on lirantal.com: no audience-inventory or cover-image preamble).",
-      "Balances concept explanation with small, runnable examples.",
-      "Uses comparison tables for alternatives and trade-offs.",
-      "Includes explicit measurement/verification guidance."
-    ],
-    "do": [
-      "Lead with a clear thesis and stakes; weave who benefits into Background or Applications, not as a standalone opening audience list (lirantal.com).",
-      "Explain mechanisms with diagrams or concise code/pseudo-code.",
-      "Present trade-offs and when to choose each option.",
-      "Provide commands/metrics for readers to verify results."
-    ],
-    "dont": [
-      "Do not rely on unexplained jargon.",
-      "Do not present only one approach where meaningful alternatives exist.",
-      "Avoid long code dumps without commentary or verification."
-    ],
-    "calibration_examples": {
-      "good_intro": "Why dependency pinning strategies impact build determinism and incident recovery for Node.js services.",
-      "bad_intro": "Software supply chain security is important for many reasons across the industry.",
-      "good_snippet": "```bash\nnpm ci --ignore-scripts\n# Quick check: lockfile integrity is enforced\n```"
-    },
-    "metrics": {
-      "docs_analyzed": 0,
-      "token_coverage_estimate": "~0%",
-      "code_to_prose_ratio_pct": 30,
-      "top_ngrams": [
-        { "ngram": "how it works", "freq": 0 },
-        { "ngram": "trade-offs", "freq": 0 }
-      ],
-      "heading_depth_distribution": { "h1": 1, "h2": 10, "h3": 12, "h4": 4 },
-      "link_domains_top": [
-        { "domain": "lirantal.com", "count": 0 },
-        { "domain": "github.com", "count": 0 }
-      ]
-    },
-    "deviations": "Template profile for deep technical explainers; not derived from a specific corpus.",
-    "quality_checklist": [
-      "Intro states thesis and why the topic matters within the first short stretch; on lirantal.com do not use the opening for audience inventory or cover/OG image meta.",
-      "Background/primer includes ≥2 paragraphs and mentions prior art.",
-      "If public options exist, include a 'Trade-offs & Alternatives' section with a comparison table.",
-      "How It Works section explains mechanism with code or diagram.",
-      "Validation & Measurement includes commands/metrics to reproduce results.",
-      "Security & Performance considerations included where applicable.",
-      "Troubleshooting present if actionable; otherwise Limitations & Future Work present.",
-      "FAQ section exists with ≥3 Q&A entries; each answer is specific and may include a command/link.",
-      "At least three descriptive inline links to canonical docs, specs, or repos appear in the body; on lirantal.com never add a terminal ## References or bibliography block.",
-      "Conclusion contains 3-5 next actions plus X/Twitter and GitHub CTAs.",
-      "No one-liner sections; H2 ≥5 sentences or equivalent content density.",
-      "No soft-avoid tools appear unless explicitly substituted via policy."
-    ],
-    "red_flags": [
-      "Claims without measurement or authoritative inline citations.",
-      "Alternatives presented without trade-offs.",
-      "Code samples that cannot be run or verified.",
-      "Hand-wavy security/performance statements."
-    ],
-    "rewrite_rules": [
-      { "if": "long, nested sentences", "then": "split into ≤20 words; keep one idea per sentence" },
-      { "if": "passive voice", "then": "prefer active voice unless actor is irrelevant" },
-      { "if": "unbalanced section (concepts only)", "then": "add mechanism example or diagram" },
-      { "if": "unsubstantiated claim", "then": "add citation or measurement plan" }
-    ],
-    "confidence": 0.95,
-    "article_length": {
-      "target_words_min": 2400,
-      "target_words_max": 3800
-    },
-    "section_density": {
-      "min_sentences_h2": 5,
-      "min_sentences_h3": 3,
-      "min_words_per_paragraph": 40,
-      "allow_one_liner_sections": false,
-      "code_block_supports_section_if": "code_block_present AND (≥2 sentences total around it)"
-    },
-    "step_anatomy": {
-      "require_why": false,
-      "require_how": false,
-      "require_verify": true,
-      "require_pitfalls_every_n_steps": 0,
-      "require_alternatives_or_perf_every_n_steps": 0,
-      "verify_patterns": [
-        "Expected output:",
-        "Quick check:",
-        "Validate:"
-      ]
-    },
-    "content_depth": {
-      "exposition_to_procedure_ratio_target": "65:35",
-      "examples_policy": "concrete, runnable, ≤15 lines; prefer minimal deps",
-      "include_common_errors": true,
-      "include_performance_notes": "when relevant; show measurement commands"
-    },
-    "conclusion_requirements": {
-      "min_action_items": 4,
-      "action_item_patterns": [
-        "Run the reference example and compare metrics",
-        "Adopt recommended defaults/flags",
-        "Evaluate alternatives using the trade-off table",
-        "Open an issue or share findings"
-      ],
-      "social_cta": {
-        "enabled": true,
-        "twitter_handle": "@liran_tal",
-        "phrasing": "Follow on X/Twitter for updates and new guides."
-      },
-      "github_cta": {
-        "enabled": true,
-        "url": "https://github.com/lirantal",
-        "phrasing": "Explore more code examples and related work on GitHub."
-      }
-    },
-    "self_checks": [
-      "Includes Background & Prior Art before 'How It Works'",
-      "Includes Trade-offs & Alternatives with a comparison device",
-      "Includes Validation & Measurement with commands/metrics",
-      "FAQ ≥3 items; ≥3 descriptive inline canonical links in the body (lirantal.com: no terminal References section)",
-      "Conclusion includes ≥3 actions + X/Twitter + GitHub CTAs",
-      "No excluded technologies appear: /(jenkins|travis)/i"
-    ],
-    "content_policies": {
-      "preferred_ci": ["GitHub Actions"],
-      "excluded_ci": ["Jenkins"],
-      "hard_exclusions": ["Jenkins pipelines/examples", "Non-JS stacks unless unavoidable"],
-      "preferred_hosting": ["Vercel", "Netlify"],
-      "preferred_package_managers": ["npm", "pnpm"],
-      "preferred_runtimes": ["Node.js current LTS"]
-    },
-    "cta_defaults": {
-      "twitter": "@liran_tal",
-      "github": "https://github.com/lirantal",
-      "patterns": [
-        "Follow on X/Twitter for updates",
-        "Explore related examples on GitHub"
-      ]
-    },
-    "required_sections": {
-      "introduction": { "required": true, "min_paragraphs": 2, "purpose": "Frame thesis and why-now; on lirantal.com omit audience callouts and cover-image meta from the opening." },
-      "background_or_primer": { "required": true, "min_paragraphs": 2, "include": ["prior art", "definitions", "assumptions"] },
-      "architecture_or_flow": { "required": true, "allow_mermaid": true, "textual_fallback": true, "note": "Diagram or narrative of mechanism." },
-      "step_by_step_guide": { "required": false, "enforce_step_anatomy": false },
-      "validation_and_measurement": { "required": true, "min_items": 2 },
-      "security_and_performance_considerations": { "required": true },
-      "tradeoffs_and_alternatives": { "required": true, "min_items": 3 },
-      "applications_and_examples": { "required": true, "min_items": 2 },
-      "troubleshooting_and_pitfalls": { "required": false, "min_items": 3, "style": "symptom → cause → fix" },
-      "limitations_and_future_work": { "required": true, "min_items": 3 },
-      "faq": { "required": true, "min_qna": 3, "format": "Q: … / A: …", "placement": "after limitations" },
-      "references_and_related_links": { "required": false, "min_links": 3, "anchor_text": "descriptive", "lirantal_com": "Satisfy min_links as inline prose links only; no terminal References section on lirantal.com." }
-    },
-    "background_requirements": {
-      "must_answer": [
-        "What problem is addressed?",
-        "Why now/why this approach?",
-        "Where relevant, who benefits—address inside Background or Applications, not as a dedicated opening audience list (lirantal.com)."
-      ],
-      "avoid": [
-        "marketing clichés",
-        "vendor fluff"
-      ]
-    },
-    "faq_requirements": {
-      "min_qna": 3,
-      "max_qna": 7,
-      "selection_heuristics": [
-        "From trade-offs and alternatives likely to confuse readers",
-        "From validation and measurement steps",
-        "From migration/adoption concerns and version compatibility",
-        "From SEO intent and related queries"
-      ],
-      "seed_questions": [
-        "Which Node.js versions are recommended (current LTS vs latest)?",
-        "How do I measure impact with minimal setup?",
-        "What changes when using pnpm instead of npm?",
-        "How do I integrate this with GitHub Actions securely (secrets, permissions)?",
-        "What are the main failure modes and how can I detect them?"
-      ],
-      "answer_style": "Short, specific, includes command/metric or deep link where applicable"
-    },
-    "toc_preferences": {
-      "include_toc_if_words_over": 1800,
-      "exclude_sections": ["FAQ"]
-    },
-    "dominant_archetype": "Explainer",
-    "secondary_archetypes": ["Best Practices"],
-    "corpus_archetype_distribution": { "Explainer": 1.0 },
-    "archetype_profiles": {
-      "Explainer": {
-        "enforce_step_anatomy": false,
-        "argument_pattern": "Thesis → Background → Mechanism → Trade-offs → Applications → Validation → Limitations",
-        "evidence_requirements": [
-          "diagram or textual flow",
-          "minimal runnable example or pseudo-code",
-          "realistic scenario comparison"
-        ],
-        "required_sections": [
-          "Introduction",
-          "Background & Prior Art",
-          "How It Works",
-          "Trade-offs & Alternatives",
-          "Applications & Examples",
-          "Validation & Measurement",
-          "Security & Performance Considerations",
-          "Limitations & Future Work",
-          "FAQ",
-          "Next Steps & CTA"
-        ],
-        "section_density_overrides": { "min_sentences_h2": 5, "min_sentences_h3": 3 }
-      }
-    },
-    "generation_contract": {
-      "use_archetype_profile": true,
-      "outline_from": "archetype_profiles[dominant_archetype].required_sections",
-      "enforce_step_anatomy_if": "dominant_archetype === 'Tutorial'",
-      "argument_or_narrative_pattern": "resolve from archetype_profiles",
-      "toc_policy": { "include_toc_if_words_over": 1800 }
+    "person": "Address the reader as you when useful. Allow first person for supported author experience and judgment; never fabricate either.",
+    "rhythm": "Mix sentence and paragraph lengths. Keep conditions close to claims and avoid both dense clause chains and sequences of clipped fragments.",
+    "specificity": "Prefer actual behavior, names, constraints, and consequences over abstract praise or generic statements of importance.",
+    "opinion": "State a recommendation when the evidence supports it, explain why, and identify when it would change.",
+    "personality": "Use analogy, humor, or personal narrative when it clarifies the topic and fits the author's references. Do not impose a blanket ban on figurative language.",
+    "terminology": "Use consistent technical terms and real identifiers. Prefer a plain word when it preserves meaning; retain a specialist term when it adds precision."
+  },
+  "structure": {
+    "opening": "Start with the problem, finding, or thesis and its consequence. Do not open with audience inventories, article-production notes, or manufactured urgency.",
+    "organizing_question": "Choose one central question or claim and order material so each part prepares the reader for the next.",
+    "possible_progression": "Problem or finding, mechanism, evidence, implications, recommendation. Adapt, combine, reorder, or omit sections according to the argument.",
+    "mixed_formats": "An explanation can contain a concise reproduction, comparison, or remediation procedure. Split material only when doing so improves navigation or understanding.",
+    "background": "Include definitions, history, and prior art only when they explain a decision or remove a real obstacle to understanding.",
+    "alternatives": "Discuss meaningful alternatives and their constraints when they affect a choice. Do not manufacture competitors or a comparison table.",
+    "limitations": "State boundaries and unresolved questions near the claims they constrain. Add a separate section only when useful.",
+    "ending": "Finish when the argument is complete. Add a specific next step if useful; avoid compulsory recaps, action lists, social promotions, and generic predictions.",
+    "length": "Follow the user's brief. Otherwise use the space the topic needs, without minimum word counts, section counts, or prose-to-code ratios.",
+    "optional_elements": {
+      "faq": "Include only real remaining questions that are easier to find here; do not repeat the body or generate questions to meet an SEO quota.",
+      "tables": "Use for choices or results that benefit from direct comparison.",
+      "diagrams": "Use when they make a mechanism or relationship clearer than prose; respect the destination's rendering support.",
+      "toc": "Add when navigation helps and the destination does not already provide it."
     }
-  }
-  
+  },
+  "technical_evidence": {
+    "mechanism": "Explain how inputs, components, or trust boundaries produce the claimed behavior. Use code, a diagram, or a concrete textual flow as appropriate.",
+    "examples": "Prefer minimal, representative examples with enough setup to run them. Do not omit necessary error handling or context to satisfy a line limit. Label pseudocode and illustrative fragments.",
+    "environment": "State runtime, dependency versions, configuration, and platform constraints when they affect reproducibility. Verify current support rather than assuming a remembered LTS version.",
+    "verification": "For behavior central to the claim, provide a reproducible command or procedure and the expected result. Separate documented expectations from output actually observed in this session.",
+    "sources": "Use descriptive inline links to primary documentation, specifications, source code, advisories, or original research where each claim needs support. Check that the source supports the precise claim and version; do not pad with links to meet a count.",
+    "performance": "Support quantitative claims with measurements and methodology or attributable published results. Include workload, environment, baseline, and limitations when relevant. Never turn a measurement plan into a reported result.",
+    "uncertainty": "Distinguish verified facts, inference, and untested hypotheses. Qualify or remove unsupported claims and disclose material verification gaps."
+  },
+  "security_review": {
+    "when": "Apply to vulnerability explanations, exploit demonstrations, security recommendations, and mitigation claims, as relevant to the article.",
+    "questions": [
+      "What input or capability does the attacker control, and what access or configuration is required?",
+      "Which behavior crosses a trust boundary or causes the vulnerability, and what impact is demonstrated?",
+      "Which versions and configurations are affected, and which authoritative advisory or fix establishes that scope?",
+      "Does the reproduction demonstrate the claimed behavior under the stated conditions?",
+      "Does the mitigation prevent that behavior, and what limitations or residual risks remain?"
+    ],
+    "scope": "Distinguish a demonstrated exploit from a hypothetical attack, a workaround from a complete fix, and a vulnerable API pattern from all uses of that API. Do not generalize beyond the evidence.",
+    "reproduction": "Use a controlled local example and non-sensitive fixtures. State whether the example was executed or remains untested; do not imply a live target was tested."
+  },
+  "formatting": {
+    "headings": "Prefer sentence case and specific claims, questions, or tasks. Follow destination conventions when they differ.",
+    "paragraphs": "Give each paragraph a purpose. Short paragraphs and one-sentence sections are valid when they carry enough meaning.",
+    "lists": "Use numbered lists for ordered steps and bullets for parallel items. Prefer connected prose for an argument.",
+    "code": "Use fenced blocks with language labels and backticks for identifiers, paths, flags, and commands. Follow the relevant project's indentation conventions.",
+    "emphasis": "Use emphasis and callouts sparingly; do not make every paragraph a labeled bullet.",
+    "seo": "Use accurate, descriptive titles and headings. Do not distort wording, length, or structure to insert keywords."
+  },
+  "voice_calibration": {
+    "input": "Articles the user supplies or explicitly selects as representative of the desired voice.",
+    "method": "Read the references and identify useful patterns in openings, pacing, technical explanation, personal experience, and recommendations. Adapt to the current topic without copying distinctive phrasing.",
+    "fallback": "Proceed with this profile when references are unavailable. Do not invent a corpus, numerical style measurements, or author preferences."
+  },
+  "destination_overrides": {
+    "lirantal.com": {
+      "voice": "Allow supported personal experience, engineering judgment, and distinctive observations.",
+      "references": "Use descriptive inline source links. Do not add a terminal References, Further reading, bibliography, or link-dump section.",
+      "publishing": "Use the repository's publishing workflow for paths, frontmatter, cover assets, and build checks; those checks do not establish technical correctness."
+    },
+    "nodejs-security.com": {
+      "emphasis": "Explain attacker control, prerequisites, vulnerable behavior, impact, reproduction, mitigation, and its limits where relevant. These are review questions, not mandatory headings.",
+      "publishing": "Follow the destination repository's actual conventions. Do not assume lirantal.com's Astro layout or metadata applies."
+    },
+    "snyk_blog": {
+      "brief": "Follow the supplied editorial brief for audience, terminology, structure, and CTA requirements. Do not invent Snyk policy or carry over personal-blog social CTAs.",
+      "evidence": "Keep product and security claims specific and supported. A product mention should help the reader follow the mechanism or make a decision."
+    }
+  },
+  "review_passes": {
+    "technical": "Check claims, sources, examples, versions, recommendations, and material limitations first. Correct or report gaps before polishing the language.",
+    "editorial": "Then check the argument's progression, concrete wording, rhythm, repetition, and whether each section earns its place. Preserve technical meaning while editing."
+  },
+  "final_review_questions": [
+    "Does the opening make a concrete promise that the article fulfills?",
+    "Can the reader explain the mechanism and understand the evidence for the main claim?",
+    "Are examples reproducible or clearly labeled, with observed and expected results distinguished?",
+    "Are recommendations scoped to the conditions that make them valid?",
+    "Would removing a paragraph, heading, FAQ, or CTA improve the article without losing useful information?",
+    "Does the prose fit supplied author references and the destination's actual brief?"
+  ]
+}
