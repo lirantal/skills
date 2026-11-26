@@ -1,0 +1,4 @@
+interface:
+  display_name: "X AI Builder Security Research"
+  short_description: "Rank security opportunities from AI builders on X"
+  default_prompt: "Use $x-demo-research to research X-only concerns from AI builders about agent security and agentic AppSec, then rank opportunities with existing-tool coverage and source posts."
