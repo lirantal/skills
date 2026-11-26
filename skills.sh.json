@@ -25,6 +25,13 @@
       "skills": [
         "writing-style-explainer"
       ]
+    },
+    {
+      "title": "Research",
+      "description": "Evidence-backed opportunity research from developer conversations.",
+      "skills": [
+        "x-demo-research"
+      ]
     }
   ]
 }

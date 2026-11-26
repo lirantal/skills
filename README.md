@@ -66,6 +66,7 @@ Individual skills remain discoverable in their [`SKILL.md`](skills/) files:
 - [`gh-bulk-repo-edit`](skills/gh-bulk-repo-edit/SKILL.md)
 - [`gh-repo-init-context`](skills/gh-repo-init-context/SKILL.md)
 - [`writing-style-explainer`](skills/writing-style-explainer/SKILL.md)
+- [`x-demo-research`](skills/x-demo-research/SKILL.md) — X-only research into security opportunities for AI builders, with ranked findings, existing-tool coverage, and an auditable HTML report.
 
 ## Repository layout
 
